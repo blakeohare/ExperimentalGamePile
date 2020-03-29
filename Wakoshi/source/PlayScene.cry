@@ -1,0 +1,52 @@
+import Graphics2D;
+import Math;
+import Random;
+import TwoCansAlpha4;
+
+const TILE_WIDTH = 40;
+
+const GRID_PX_OFFSET = 250;
+const GRID_PY_OFFSET = 60;
+
+const ORDERS_PX_OFFSET = 30;
+const ORDERS_PY_OFFSET = 10;
+
+class PlayScene : AbstractScene {
+
+	field _next = null;
+
+	field playGrid;
+	field orderCardList;
+
+	constructor() : base() {
+		this.playGrid = new PlayGrid();
+		this.orderCardList = new OrderCardList();
+	}
+	
+	function update(inputManager, events) {
+		this.orderCardList.update();
+		this.playGrid.update(events);
+		
+		this.checkCurrentConfiguration();
+		if (this.playGrid.youLost) {
+			this.switchScene(new PlayScene());
+		}
+	}
+	
+	field _rc = 0;
+	
+	function render() {
+		rc = this._rc++;
+		this.playGrid.render(GRID_PX_OFFSET, GRID_PY_OFFSET, rc);
+		this.orderCardList.render(ORDERS_PX_OFFSET, ORDERS_PY_OFFSET, rc);
+	}
+	
+	function checkCurrentConfiguration() {
+		items = this.playGrid.getCurrentFinishedConfiguration();
+		if (items == null) return;
+		isMatch = this.orderCardList.applyConfiguration(items);
+		if (isMatch) {
+			this.playGrid.zapCenter();
+		}
+	}
+}

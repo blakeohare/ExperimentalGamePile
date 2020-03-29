@@ -1,0 +1,48 @@
+
+enum TileColor {
+	RED = 1,
+	ORANGE = 2,
+	YELLOW = 3,
+	GREEN = 4,
+	BLUE = 5,
+	PURPLE = 6,
+}
+
+class Tile {
+	
+	static field COLOR_LOOKUP = {
+		TileColor.RED: [255, 0, 0],
+		TileColor.ORANGE: [255, 128, 0],
+		TileColor.YELLOW: [255, 255, 0],
+		TileColor.GREEN: [0, 160, 40],
+		TileColor.BLUE: [30, 0, 240],
+		TileColor.PURPLE: [140, 30, 128],
+	};
+	
+	static field COLOR_LOOKUP_FADED = {};
+	
+	static constructor() {
+		for (i = 1; i <= 6; ++i) {
+			rgb = Tile.COLOR_LOOKUP[i];
+			faded = [0, 0, 0];
+			for (j = 0; j < 3; ++j) {
+				faded[j] = (rgb[j] * 3 + 128 * 6) / 9;
+			}
+			Tile.COLOR_LOOKUP_FADED[i] = faded;
+		}
+	}
+	
+	field color;
+	field rgb;
+	field age = 0;
+	field col = 0;
+	field row = 0;
+	field renderX = null;
+	field renderY = null;
+	field dead = false;
+	
+	constructor(color) {
+		this.color = color;
+		this.rgb = Tile.COLOR_LOOKUP[color];
+	}
+}

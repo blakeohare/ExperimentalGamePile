@@ -1,0 +1,62 @@
+import Random;
+
+class OrderCardList {
+	
+	field currentOrders = [];
+	
+	constructor() {
+		
+	}
+	
+	function update() {
+		while (this.currentOrders.length < 4) {
+			this.addOrder();
+		}
+		
+		for (i = this.currentOrders.length - 1; i >= 0; --i) {
+			card = this.currentOrders[i];
+			card.update();
+			if (card.ttl <= 0) {
+				this.currentOrders.remove(i);
+			}
+		}
+	}
+	
+	function addOrder() {
+		colors = [];
+		for (i = 0; i < 9; ++i) {
+			colors.add(Random.randomInt(6) + 1);
+		}
+		this.currentOrders.add(new OrderCard(colors));
+	}
+	
+	function applyConfiguration(colors) {
+		
+		for (i = 0; i < this.currentOrders.length; ++i) {
+			card = this.currentOrders[i];
+			if (card.isMatch(colors)) {
+				this.currentOrders.remove(i);
+				// TODO: callback to give credit.
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	function render(px, py, rc) {
+		
+		cardX = px;
+		cardY = py;
+		first = true;
+		for (card : this.currentOrders) {
+			width = first ? 200 : 70;
+			height = first ? 200 : 70;
+			card.updateBounds(px, py, width, height);
+			card.render(!first);
+			cardY += 100;
+			first = false;
+			py += height + 10;
+		}
+	}
+
+}

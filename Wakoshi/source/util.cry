@@ -1,0 +1,8 @@
+function make_grid(width, height) {
+	output = [];
+	item = [null];
+	while (width --> 0) {
+		output.add(height * item);
+	}
+	return output;
+}

@@ -1,0 +1,7 @@
+﻿// You do not need to modify this file!
+
+import TwoCansAlpha4;
+
+const FPS = 30;
+const GAME_WIDTH = 800;
+const GAME_HEIGHT = 480;

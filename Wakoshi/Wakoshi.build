@@ -1,0 +1,63 @@
+{
+	"id": "Wakoshi",
+	"title": "Wakoshi",
+	"description": "Match the color card",
+	"icons": [
+		"assets/icon32.png",
+		"assets/icon256.png"
+	],
+	
+	"deps": [
+		"%TWOCANS_SDK%/TwoCansAlpha4"
+	],
+
+	"source": "source",
+	"compilerlocale": "en",
+	"output": "output/%TARGET_NAME%",
+	
+	"image-sheets": [
+		{
+			"id": "twocans_everything",
+			"prefix": "*"
+		}
+	],
+	
+	"delegate-main-to": "TwoCansAlpha4",
+	
+	"guidseed": "com.noisyprotozoa.wakoshi,v1,%TARGET_NAME%",
+	
+	"vars": [
+		{ "name": "screen_width", "value": 640 },
+		{ "name": "screen_height", "value": 480 },
+		{ "name": "game_id", "value": "wakoshi" },
+		{ "name": "game_secret", "value": "abc123" },
+		{ "name": "use_beta_endpoint", "value": false },
+		{ "name": "game_title", "value": "Wakoshi" },
+		{ "name": "initial_scene", "value": "PlayScene" },
+		{ "name": "use_60_fps", "value": false },
+		{ "name": "enable_wasd", "value": true }
+	],
+	
+	"targets": [
+		{
+			"name": "csharp",
+			"platform": "csharp-app"
+		},
+		{
+			"name": "java",
+			"platform": "java-app"
+		},
+		{
+			"name": "python",
+			"platform": "python-app"
+		},
+		{
+			"name": "ios",
+			"platform": "javascript-app-ios"
+		},
+		{
+			"name": "android",
+			"platform": "javascript-app-android"
+		}
+	]
+}

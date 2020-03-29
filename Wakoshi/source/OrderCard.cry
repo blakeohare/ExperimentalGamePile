@@ -1,0 +1,65 @@
+import Graphics2D;
+
+class OrderCard {
+	
+	field colors;
+	field ttl = FPS * 100;
+	field bounds = null;
+	static field BAR_COLORS = {
+		'danger': [255, 0, 0],
+		'warn': [255, 255, 0],
+		'okay': [0, 255, 0]
+	};
+	
+	constructor(colors) {
+		this.colors = colors.clone();
+	}
+	
+	function update() {
+		this.ttl--;
+	}
+	
+	function updateBounds(left, top, width, height) {
+		if (this.bounds == null) {
+			this.bounds = [left, top, width, height];
+		} else {
+			
+			this.bounds[0] = (this.bounds[0] * 2 + left) / 3;
+			this.bounds[1] = (this.bounds[1] * 2 + top) / 3;
+			this.bounds[2] = (this.bounds[2] * 2 + width) / 3;
+			this.bounds[3] = (this.bounds[3] * 2 + height) / 3;
+		}
+	}
+	
+	function isMatch(colors) {
+		for (i = 0; i < 9; ++i) {
+			if (colors[i] != this.colors[i]) return false;
+		}
+		return true;
+	}
+	
+	function render(isFaded) {
+		offsetX = this.bounds[0];
+		offsetY = this.bounds[1];
+		py = offsetY;
+		tileWidth = this.bounds[2] / 4;
+		colorLookup = isFaded ? Tile.COLOR_LOOKUP_FADED : Tile.COLOR_LOOKUP;
+		for (y = 0; y < 3; ++y) {
+			px = offsetX;
+			for (x = 0; x < 3; ++x) {
+				rgb = colorLookup[this.colors[y * 3 + x]];
+				Graphics2D.Draw.rectangle(px, py, tileWidth, tileWidth, rgb[0], rgb[1], rgb[2]);
+				px += tileWidth;
+			}
+			py += tileWidth;
+		}
+		barX = offsetX;
+		barY = py + this.bounds[3] / 20;
+		barW = this.bounds[2];
+		barH = this.bounds[3] / 5;
+		barInnerW = barW * this.ttl / (FPS * 100);
+		barColor = OrderCard.BAR_COLORS[this.ttl < (FPS * 10) ? 'danger' : (this.ttl < (FPS * 40)) ? 'warn' : 'okay'];
+		Graphics2D.Draw.rectangle(barX, barY, barW, barH, 128, 128, 128);
+		Graphics2D.Draw.rectangle(barX, barY, barInnerW, barH, barColor[0], barColor[1], barColor[2]);
+	}
+}
