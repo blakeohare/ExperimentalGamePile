@@ -36,7 +36,7 @@
 		{ "name": "initial_scene", "value": "PlayScene" },
 		{ "name": "use_60_fps", "value": false },
 		{ "name": "enable_wasd", "value": true },
-		{ "name": "thumbnail", "value": "assets/thumbnail.png" },
+		{ "name": "thumbnail", "value": "assets/thumbnail.png" }
 	],
 	
 	"targets": [
