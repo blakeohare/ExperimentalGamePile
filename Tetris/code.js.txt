@@ -1,0 +1,409 @@
+<html><script language="javascript">
+
+var board = null;
+var htmlBlocks = null;
+var tboard = null;
+
+function get_random_piece() {
+	var id = parseInt(Math.random() * 7);
+	switch (id) {
+		case 0: return [
+			[0, 0, 0, 0],
+			[0, 1, 1, 0],
+			[0, 1, 1, 0],
+			[0, 0, 0, 0],
+			0
+		];
+		
+		case 1: return [
+			[0, 1, 0, 0],
+			[0, 1, 0, 0],
+			[0, 1, 0, 0],
+			[0, 1, 0, 0],
+			1
+		];
+		
+		case 2: return [
+			[0, 2, 2, 0],
+			[2, 2, 0, 0],
+			[0, 0, 0, 0],
+			[0, 0, 0, 0],
+			2
+		];
+		
+		case 3: return [
+			[3, 3, 0, 0],
+			[0, 3, 3, 0],
+			[0, 0, 0, 0],
+			[0, 0, 0, 0],
+			3
+		];
+		
+		case 4: return [
+			[0, 0, 0, 0],
+			[2, 2, 2, 0],
+			[2, 0, 0, 0],
+			[0, 0, 0, 0],
+			4
+		];
+		
+		case 5: return [
+			[0, 0, 0, 0],
+			[3, 3, 3, 0],
+			[0, 0, 3, 0],
+			[0, 0, 0, 0],
+			5
+		];
+		
+		case 6: return [
+			[0, 1, 0, 0],
+			[1, 1, 1, 0],
+			[0, 0, 0, 0],
+			[0, 0, 0, 0],
+			6
+		];
+		
+		default:
+			return null;
+	}
+}
+
+function flip_overlay(direction) {
+	if (overlay == null) return;
+	var id = overlay[4];
+	
+	switch (id) {
+		case 0: // square, do nothing
+			return;
+		case 1: // long piece, transpose, always
+			transpose();
+			return;
+		default:
+			// all others: transpose + flip / flip + transpose. Flip is only swapping out columns 0 and 2.
+			
+			if (direction == 1) {
+				transpose();
+				swap_columns();
+			} else {
+				swap_columns();
+				transpose();
+			}
+			
+			return;
+	}
+}
+
+function transpose() {
+	for (var y = 1; y < 4; ++y) {
+		for (var x = 0; x < y; ++x) {
+			t = overlay[x][y];
+			overlay[x][y] = overlay[y][x];
+			overlay[y][x] = t;
+		}
+	}
+}
+
+function swap_columns() {
+	for (var y = 0; y < 4; ++y) {
+		t = overlay[0][y];
+		overlay[0][y] = overlay[2][y];
+		overlay[2][y] = t;
+	}
+}
+
+var started = false;
+function forum_foo() {
+	if (started) return;
+	started = true;
+
+  var hostdiv = document.getElementById('arglebargle');
+  var grid = '<table bgcolor="#000000">';
+  var x;
+  var y;
+  for (y = 0; y < 20; ++y) {
+    grid += '<tr>';
+    for (x = 0; x < 10; ++x) {
+      grid += '<td width="20" id="cell_' + x + '_' + y + '">&nbsp;</td>';
+    }
+    grid += '</tr>';
+  }
+  grid += '</table>Use the W, A, S, D keys.';
+  grid = '<div id="line_count_host" style="font-weight:bold;">Lines: 0</div>' + grid;
+  hostdiv.innerHTML = grid;
+  
+  board = [];
+  tboard = [];
+  htmlBlocks = [];
+  for (x = 0; x < 10; ++x) {
+      tcolumn = [];
+      column = [];
+      htmlColumn = [];
+	  for (y = 0; y < 20; ++y) {
+	      column.push(0);
+	      tcolumn.push(0);
+	      htmlColumn.push(document.getElementById('cell_' + x + '_' + y));
+	  }
+	  board.push(column);
+	  tboard.push(tcolumn);
+	  htmlBlocks.push(htmlColumn);
+  }
+  
+  document.onkeydown = keydown_handler;
+  document.onkeyup = keyup_handler;
+  
+  do_frame();
+}
+
+function pump_events() {
+	var output = events;
+	events = [];
+	return output;
+}
+
+var keys_pressed = { 'left': false, 'right': false, 'up': false, 'down': false };
+var events = [];
+
+function getKey(ev) {
+	var keyCode = ev.which ? ev.which : ev.keyCode;
+	switch (keyCode) {
+		case 65: return 'left';
+		case 68: return 'right';
+		case 83: return 'down';
+		case 87: return 'up';
+		default: return null;
+	}
+}
+
+function keydown_handler(ev) { key_handler(ev, true); }
+function keyup_handler(ev) { key_handler(ev, false); }
+
+function key_handler(ev, down) {
+	var key = getKey(ev);
+	if (key != null) {
+		keys_pressed[key] = down;
+		events.push([key, down]);
+	}
+}
+var fall_counter_max = 30;
+var fall_counter = fall_counter_max;
+
+function do_frame() {
+	++counter;
+	
+	var evs = pump_events();
+	for (var i = 0; i < evs.length; ++i) {
+		var ev = evs[i];
+		if (ev[1]) {
+			if (ev[0] == 'left') {
+				--overlayX;
+				if (collision()) {
+					++overlayX;
+				}
+			} else if (ev[0] == 'right') {
+				++overlayX;
+				if (collision()) {
+					--overlayX;
+				}
+			} else if (ev[0] == 'up') {
+				flip_overlay(1);
+				if (collision()) {
+					flip_overlay(-1);
+				}
+			}
+		}
+	}
+	
+	if (clearing_lines != null) {
+		--clearing_counter;
+		if (clearing_counter <= 0) {
+			for (var i = 0; i < clearing_lines.length; ++i) {
+				// this is a stupid way to do this, but I'm tired and don't care.
+				clear_this_line(clearing_lines[i]);
+			}
+			clearing_lines =  null;
+		} else {
+			var progress = 10 - parseInt(10 * clearing_counter / clearing_counter_max);
+			for (var i = 0; i < clearing_lines.length; ++i) {
+				for (var x = 0; x < progress; ++x) {
+					board[x][clearing_lines[i]] = 0;
+				}
+			}
+		}
+	} else {
+		--fall_counter;
+		
+		if (keys_pressed['down']) {
+			fall_counter -= 10;
+		}
+		
+		if (fall_counter < 0) {
+			if (overlay == null) {
+				overlay = get_random_piece();
+				overlayX = 4;
+				overlayY = 0;
+			} else {
+				++overlayY;
+				if (collision()) {
+					--overlayY;
+					flatten();
+					check_for_lines();
+					overlay = null;
+				}
+			}
+			fall_counter = fall_counter_max;
+		}
+	}
+	
+	render();
+	
+	window.setTimeout('do_frame()', 33);
+}
+
+function clear_this_line(n) {
+	var targetY = 19;
+	var x;
+	for (var y = 19; y >= 0; --y) {
+		if (n == y) continue;
+		if (targetY != y) {
+			for (x = 0; x < 10; ++x) {
+				board[x][targetY] = board[x][y];
+			}
+		}
+		--targetY;
+	}
+	for (x = 0; x < 10; ++x) {
+		board[x][0] = 0;
+	}
+}
+
+var clearing_lines = null;
+var clearing_counter = 0;
+var clearing_counter_max = 30;
+
+function check_for_lines() {
+	var lines = [];
+	for (var y = 0; y < 20; ++y) {
+		var all_filled = true;
+		for (var x = 0; x < 10; ++x) {
+			if (board[x][y] == 0) {
+				all_filled = false;
+				break;
+			}
+		}
+		
+		if (all_filled) {
+			lines.push(y);
+		}
+	}
+	
+	if (lines.length > 0) {
+		clearing_lines = lines;
+		update_lines(lines.length);
+		clearing_counter = clearing_counter_max;
+	}
+}
+
+
+function flatten() {
+	for (var y = 0; y < 4; ++y) {
+		for (var x = 0; x < 4; ++x) {
+			if (overlay[x][y] > 0) {
+				var rx = x + overlayX;
+				var ry = y + overlayY;
+				if (rx >= 0 && rx < 10 && ry >= 0 && ry < 20) {
+					board[rx][ry] = overlay[x][y];
+				}
+			}
+		}
+	}
+}
+
+function collision() {
+	if (overlay == null) return false;
+	var x;
+	var rx;
+	var ry;
+	for (var y = 0; y < 4; ++y) {
+		for (x = 0; x < 4; ++x) {
+			if (overlay[x][y] != 0) {
+				rx = x + overlayX;
+				ry = y + overlayY;
+				if (rx < 0 || ry < 0 || rx >= 10 || ry >= 20) {
+					return true;
+				}
+				
+				if (board[rx][ry] != 0) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+function render() {
+	var y;
+	var x;
+	for (y = 0; y < 20; ++y) {
+		for (x = 0; x < 10; ++x) {
+			tboard[x][y] = board[x][y];
+		}
+	}
+	if (overlay != null) {
+		var ox;
+		var oy = overlayY;
+		for (y = 0; y < 4; ++y) {
+			ox = overlayX;
+			for (x = 0; x < 4; ++x) {
+				if (ox >= 0 && oy >= 0 && ox < 10 && oy < 20) {
+					if (overlay[x][y] > 0) {
+						tboard[ox][oy] = overlay[x][y];
+					}
+				}
+				++ox;
+			}
+			++oy;
+		}
+	}
+	
+	for (y = 0; y < 20; ++y) {
+		for (x = 0; x < 10; ++x) {
+			setColor(x, y, tboard[x][y]);
+		}
+	}
+}
+
+var colors = [
+	['#000000', '#ffffff', '#0080ff', '#008000'],
+	['#000000', '#ffffff', '#ff2000', '#ffa000'],
+	['#000000', '#ffffff', '#0030ff', '#800080'],
+	['#000000', '#ffffff', '#00ff20', '#eeff00'],
+];
+
+var current_color_mode = 0;
+
+function setColor(x, y, value) {
+	htmlBlocks[x][y].style.backgroundColor = colors[current_color_mode][value];
+}
+
+var overlay = null;
+var overlayX = 0;
+var overlayY = 0;
+var counter = 0;
+var line_count = 0;
+
+function update_lines(amount_to_add) {
+	line_count += amount_to_add;
+	document.getElementById('line_count_host').innerHTML = 'Lines: ' + line_count;
+	current_color_mode = parseInt(line_count / 10) % colors.length;
+	
+}
+
+
+</script>
+
+<div id="arglebargle">
+
+</div>
+<a href="javascript:forum_foo();">I'll just leave this here.</a>
+</html>
